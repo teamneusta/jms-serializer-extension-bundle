@@ -14,7 +14,6 @@ final class NeustaJmsSerializerExtensionExtension extends ConfigurableExtension
         $container->register('jms_serializer.metadata.file_locator_decorated', SerializerFileLocator::class)
             ->setDecoratedService('jms_serializer.metadata.file_locator')
             ->addArgument(new Reference('jms_serializer.metadata.file_locator_decorated.inner'))
-            ->addArgument($container->getParameter('kernel.project_dir'))
             ->addArgument($config['non_prefixed_namespaces']);
     }
 }
