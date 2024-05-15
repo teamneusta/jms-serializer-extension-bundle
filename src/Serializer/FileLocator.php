@@ -18,8 +18,10 @@ class FileLocator extends OriginalFileLocator
 
     public function findFileForClass(\ReflectionClass $class, string $extension): ?string
     {
+        $possibleMatches = [];
+
         foreach ($this->dirs as $prefix => $dir) {
-            $nonPrefixed = \in_array($prefix, $this->non_prefixed_namespaces, true);
+            $nonPrefixed = \array_key_exists($prefix, $this->non_prefixed_namespaces);
             if (!$nonPrefixed && !str_starts_with($class->getNamespaceName(), $prefix)) {
                 continue;
             }
@@ -31,10 +33,38 @@ class FileLocator extends OriginalFileLocator
                 ) . '.' . $extension;
 
             if (file_exists($path)) {
-                return $path;
+                $possibleMatches[$prefix] = $path;
             }
         }
 
+        if (!empty($possibleMatches)) {
+            $possibleMatchesSorted = $this->sortPossibleMatchesByPrefixPriority($possibleMatches);
+            // return last one -> the highest priority
+            end($possibleMatchesSorted);
+            return current($possibleMatchesSorted);
+        }
+
         return null;
+    }
+
+    /**
+     * @param array<string, string> $possibleMatches prefix => file
+     * @return array<string, string> same as input but ordered by prefix priority
+     */
+    private function sortPossibleMatchesByPrefixPriority(array $possibleMatches): array
+    {
+        uksort($possibleMatches, function (string $prefix_a, string $prefix_b) {
+            $getPrio = function (string $prefix): int {
+                if (array_key_exists($prefix, $this->non_prefixed_namespaces) && array_key_exists('priority', $this->non_prefixed_namespaces[$prefix])) {
+                    return (int) $this->non_prefixed_namespaces[$prefix]['priority'];
+                }
+
+                return 0;
+            };
+
+            return $getPrio($prefix_a) <=> $getPrio($prefix_b);
+        });
+
+        return $possibleMatches;
     }
 }

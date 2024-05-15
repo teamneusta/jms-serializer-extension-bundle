@@ -28,7 +28,7 @@ jms_serializer:
     directories:
       my_bundle:
         path: '@MyBundle/../config/serializer'
-        namespace_prefix: 'my-bundle'
+        namespace_prefix: 'my_bundle'
       app:
         path: '%kernel.project_dir%/config/serializer'
         namespace_prefix: 'app'
@@ -38,8 +38,32 @@ jms_serializer:
 
 neusta_jms_serializer_extension:
   non_prefixed_namespaces:
-    - 'my-bundle'
-    - 'app'
+    my_bundle: ~
+    app: ~
+```
+
+### Overriding load priority
+
+It is possible to provide a `priority` per namespace. If no priority is given, `0` is assumed. When multiple configuration files for a class are found, the one with the highest priority is used.
+
+For example, consider the following configuration. If a configuration file for a given class is found in both `my_bundle` and `another_bundle`, the configuration from `my_bundle` is used because it has a higher priority.
+
+```yaml
+jms_serializer:
+  metadata:
+    directories:
+      my_bundle:
+        path: '@MyBundle/../config/serializer'
+        namespace_prefix: 'my_bundle'
+      another_bundle:
+        namespace_prefix: "Company\\Thing\\CoolBundle"
+        path: "@CompanyThingCoolBundle/../config/serializer"
+
+neusta_jms_serializer_extension:
+  non_prefixed_namespaces:
+    my_bundle:
+      priority: 10
+    another_bundle: ~
 ```
 
 ## Contribution

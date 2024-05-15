@@ -16,7 +16,12 @@ final class Configuration implements ConfigurationInterface
             ->children()
                 ->arrayNode('non_prefixed_namespaces')
                     ->info('namespace names which should be ignored')
-                    ->prototype('scalar')->end()
+                    ->useAttributeAsKey('name')
+                    ->prototype('array')
+                        ->children()
+                            ->scalarNode('priority')->defaultNull()->end()
+                        ->end()
+                    ->end()
                 ->end()
             ->end()
         ;
